@@ -20,3 +20,4 @@ class Config(object):
     YA_TRANSLATOR_KEY = os.environ.get('YA_TRANSLATOR_KEY')
     POSTS_PER_PAGE = 3
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
+    LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
