@@ -3,7 +3,7 @@ from app.api import bp
 from app.api.auth import token_auth
 from app.api.errors import bad_request
 from flask import g, abort, jsonify, request, url_for
-from app.models import User
+from app.models import User, Post
 
 
 @bp.route('/users/<int:id>', methods=['GET'])
@@ -40,6 +40,17 @@ def get_followed(id):
     per_page = min(request.args.get('per_page', 10, type=int), 100)
     data = User.to_collection_dict(user.followed, page, per_page,
                                    'api.get_followed', id=id)
+    return jsonify(data)
+
+
+@bp.route('/users/<int:id>/news_feed', methods=['GET'])
+@token_auth.login_required
+def get_followed_posts(id):
+    user = User.query.get_or_404(id)
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    data = Post.to_collection_dict(user.followed_posts(), page, per_page,
+                                   'api.get_followed_posts', id=id)
     return jsonify(data)
 
 
