@@ -6,7 +6,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm
-from app.models import User, Post
+from app.models import User, Post, Trip
 from app.translate import translate
 from app.main import bp
 
@@ -44,6 +44,21 @@ def index():
         if posts.has_prev else None
     return render_template('index.html', title=_('Home'), form=form,
                            posts=posts.items, next_url=next_url,
+                           prev_url=prev_url)
+
+
+@bp.route('/trips')
+@login_required
+def trips():
+    page = request.args.get('page', 1, type=int)
+    trips = Trip.query.order_by(Trip.timestamp.desc()).paginate(
+        page, current_app.config['TRIPS_PER_PAGE'], False)
+    next_url = url_for('main.trips', page=trips.next_num) \
+        if trips.has_next else None
+    prev_url = url_for('main.trips', page=trips.prev_num) \
+        if trips.has_prev else None
+    return render_template('trips.html', title=_('Trips'),
+                           trips=trips.items, next_url=next_url,
                            prev_url=prev_url)
 
 
@@ -126,14 +141,6 @@ def unfollow(username):
     return redirect(url_for('main.user', username=username))
 
 
-@bp.route('/translate', methods=['POST'])
-@login_required
-def translate_text():
-    return jsonify({'text': translate(request.form['text'],
-                                      request.form['source_language'],
-                                      request.form['dest_language'])})
-
-
 @bp.route('/search')
 @login_required
 def search():
@@ -148,3 +155,11 @@ def search():
         if page > 1 else None
     return render_template('search.html', title=_('Search'), posts=posts,
                            next_url=next_url, prev_url=prev_url)
+
+
+@bp.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    return jsonify({'text': translate(request.form['text'],
+                                      request.form['source_language'],
+                                      request.form['dest_language'])})

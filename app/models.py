@@ -92,6 +92,7 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    trips = db.relationship('Trip', backref='author', lazy='dynamic')
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(32), index=True, unique=True)
@@ -236,3 +237,50 @@ class Post(SearchableMixin, PaginatedAPIMixin, db.Model):
             language = ''
 
         self.language = language
+
+
+class Trip(SearchableMixin, PaginatedAPIMixin, db.Model):
+    __searchable__ = ['title']
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+
+    def __repr__(self):
+        return '<Trip {}>'.format(self.title)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'timestamp': self.timestamp,
+            'user_id': self.user_id,
+            '_links': {
+                'self': url_for('api.get_trip', id=self.id),
+                'author': url_for('api.get_user', id=self.user_id),
+            }
+        }
+
+    def from_dict(self, data):
+        for field in ['title', 'user_id']:
+            if field in data:
+                setattr(self, field, data[field])
+
+
+class TripDay(SearchableMixin, PaginatedAPIMixin, db.Model):
+    __searchable__ = ['title']
+    id = db.Column(db.Integer, primary_key=True)
+    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), index=True)
+    title = db.Column(db.String(140))
+    date = db.Column(db.Date, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<Trip day {}>'.format(self.title)
+
+
+trip_user = db.Table(
+    'trip_user',
+    db.Column('trip_id', db.Integer, db.ForeignKey('trip.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+)
