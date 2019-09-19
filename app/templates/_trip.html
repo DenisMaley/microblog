@@ -6,15 +6,17 @@
                 </a>
             </td>
             <td>
-                {% set user_link %}
-                    <a href="{{ url_for('main.user', username=trip.author.username) }}">
-                        {{ trip.author.username }}
-                    </a>
-                {% endset %}
-                {{ _('%(username)s created the trip %(when)s',
-                    username=user_link, when=moment(trip.timestamp).fromNow()) }}
-                <br>
-                <span id="trip{{ trip.id }}">{{ trip.title }}</span>
+                <a href="{{ url_for('main.trip', id=trip.id) }}">
+                    {% set user_link %}
+                        <a href="{{ url_for('main.user', username=trip.author.username) }}">
+                            {{ trip.author.username }}
+                        </a>
+                    {% endset %}
+                    {{ _('%(username)s created the trip %(when)s',
+                        username=user_link, when=moment(trip.timestamp).fromNow()) }}
+                    <br>
+                    <span id="trip{{ trip.id }}">{{ trip.title }}</span>
+                </a>
             </td>
         </tr>
     </table>

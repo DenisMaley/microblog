@@ -69,6 +69,13 @@ def trips():
                            prev_url=prev_url)
 
 
+@bp.route('/trips/<id>')
+@login_required
+def trip(id):
+    trip = Trip.query.get_or_404(id)
+    return render_template('trip.html', trip=trip)
+
+
 @bp.route('/explore')
 @login_required
 def explore():
