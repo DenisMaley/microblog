@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
-from app.main.forms import EditProfileForm, PostForm, SearchForm
+from app.main.forms import EditProfileForm, PostForm, TripForm, SearchForm
 from app.models import User, Post, Trip
 from app.translate import translate
 from app.main import bp
@@ -47,9 +47,16 @@ def index():
                            prev_url=prev_url)
 
 
-@bp.route('/trips')
+@bp.route('/trips', methods=['GET', 'POST'])
 @login_required
 def trips():
+    form = TripForm()
+    if form.validate_on_submit():
+        trip = Trip(title=form.title.data, author=current_user)
+        db.session.add(trip)
+        db.session.commit()
+        flash(_('Your trip is created!'))
+        return redirect(url_for('main.trips'))
     page = request.args.get('page', 1, type=int)
     trips = Trip.query.order_by(Trip.timestamp.desc()).paginate(
         page, current_app.config['TRIPS_PER_PAGE'], False)
@@ -57,7 +64,7 @@ def trips():
         if trips.has_next else None
     prev_url = url_for('main.trips', page=trips.prev_num) \
         if trips.has_prev else None
-    return render_template('trips.html', title=_('Trips'),
+    return render_template('trips.html', title=_('Trips'), form=form,
                            trips=trips.items, next_url=next_url,
                            prev_url=prev_url)
 
