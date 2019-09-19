@@ -38,3 +38,7 @@ class PostForm(FlaskForm):
     post = TextAreaField(_l('Say something'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
+
+class TripForm(FlaskForm):
+    title = StringField(_l('Trip title'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
